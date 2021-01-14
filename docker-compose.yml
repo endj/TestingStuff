@@ -1,0 +1,45 @@
+version: "3"
+services:
+
+  client:
+    image: client:latest
+    container_name: client
+    environment:
+     - PSQL_URL=jdbc:postgresql://postgres:5432/
+     - REPORTS_HOST=http://server:8080
+    networks:
+     - net
+    depends_on: 
+     - postgres
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ./deployment/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432"
+    networks:
+     - net
+
+  server:
+    image: server:latest
+    container_name: server
+    environment: 
+      - PG_DB_NAME=postgres
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=postgres
+      - PG_PASSWORD=123
+    depends_on:
+     - "postgres"
+    networks:
+     - net
+
+networks:
+  net:
