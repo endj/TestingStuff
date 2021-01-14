@@ -19,6 +19,11 @@ public class FileWriter {
 
 
     @SneakyThrows
+    public void writeReference(String id) {
+        Files.write(Path.of("process/" + id), new byte[]{});
+    }
+
+    @SneakyThrows
     public void writeReport(String fileName, Report report) {
         byte[] bytes = objectMapper.writer().writeValueAsBytes(report);
         Files.write(Path.of("reports/" + fileName), bytes);
@@ -38,27 +43,7 @@ public class FileWriter {
 
     @SneakyThrows
     public Report readReport(String fileName) {
-        return objectMapper.reader().readValue(new File(fileName), Report.class);
+        return objectMapper.reader().readValue(new File("reports/" + fileName), Report.class);
     }
 
-  /*  public static void main(String[] args) throws IOException {
-        FileWriter fileWriter = new FileWriter(new ObjectMapper());
-        Report build = Report.builder()
-                .a("aaa")
-                .b("aaabbbb")
-                .c("ccccc")
-                .age(123)
-                .good(true)
-                .id(UUID.randomUUID())
-                .name(UUID.randomUUID().toString())
-                .build();
-        fileWriter.writeReport(build.getId().toString(), build);
-        List<String> strings = fileWriter.listFiles();
-        System.out.println(strings);
-        Report report = fileWriter.readReport(strings.get(0));
-        System.out.println(report);
-        fileWriter.deleteFile(build.getId().toString());
-        List<String> strings1 = fileWriter.listFiles();
-        System.out.println(strings1);
-    }*/
 }

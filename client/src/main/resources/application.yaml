@@ -7,6 +7,14 @@ spring:
 reports:
   host: ${REPORTS_HOST:http://localhost:8080}
 
+dumptodisk:
+  workers: ${WORKERS:20}
+  duration-between-poll-ms: ${POLL_DELAY_MS:1000}
+  queue-size: ${MAX_QUEUE_SIZE:3000}
+
+oneattime:
+  list-reports-delay: ${POLL_DELAY_MS:100}
+
 
 server:
   port: 8081

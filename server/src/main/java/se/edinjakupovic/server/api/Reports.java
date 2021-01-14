@@ -1,6 +1,8 @@
 package se.edinjakupovic.server.api;
 
+import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -9,9 +11,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -27,40 +28,48 @@ public class Reports {
         return reports.remove(uuid);
     }
 
-    public void addReport(Report report) {
-        reports.put(UUID.randomUUID(), report);
-    }
+    @Value("${producer.rate}")
+    int reportPerSecond;
+
+    @Value("${producer.total}")
+    int maxReports;
+
+    @Value("${producer.data-size}")
+    int dataSize;
 
     @PostConstruct
     public void generateStuff() {
         Random random = new Random(12312425234665L);
-        String a = "a".repeat(512);
-        String b = "b".repeat(512);
-        String c = "c".repeat(512);
+        String a = "a".repeat(dataSize);
+        String b = "b".repeat(dataSize);
+        String c = "c".repeat(dataSize);
 
         AtomicInteger reps = new AtomicInteger();
 
-        ScheduledExecutorService generator = Executors.newSingleThreadScheduledExecutor();
-        generator.scheduleAtFixedRate(() -> {
-                    int andIncrement = reps.getAndIncrement();
-                    if (andIncrement > 10000) {
-                        log.info("done");
-                        generator.shutdownNow();
+        RateLimiter rateLimiter = RateLimiter.create(reportPerSecond);
+        ExecutorService generator = Executors.newSingleThreadExecutor();
+        generator.execute(() -> {
+                    for (; ; ) {
+                        rateLimiter.acquire();
+                        if (reps.getAndIncrement() > maxReports) {
+                            log.info("done");
+                            generator.shutdownNow();
+                            return;
+                        }
+                        reports.put(UUID.randomUUID(),
+                                Report.builder()
+                                        .a(a)
+                                        .b(b)
+                                        .c(c)
+                                        .age(random.nextInt(128))
+                                        .good(random.nextBoolean())
+                                        .id(UUID.randomUUID())
+                                        .name(UUID.randomUUID().toString())
+                                        .build());
+
                     }
-                    reports.put(UUID.randomUUID(),
-                            Report.builder()
-                                    .a(a)
-                                    .b(b)
-                                    .c(c)
-                                    .age(random.nextInt(128))
-                                    .good(random.nextBoolean())
-                                    .id(UUID.randomUUID())
-                                    .name(UUID.randomUUID().toString())
-                                    .build());
-                },
-                0,
-                1,
-                TimeUnit.SECONDS);
+                }
+        );
 
     }
 }

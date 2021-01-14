@@ -7,6 +7,8 @@ services:
     environment:
      - PSQL_URL=jdbc:postgresql://postgres:5432/
      - REPORTS_HOST=http://server:8080
+     - WORKERS=2
+     - POLL_DELAY_MS=500
     networks:
      - net
     depends_on: 
@@ -31,13 +33,9 @@ services:
     image: server:latest
     container_name: server
     environment: 
-      - PG_DB_NAME=postgres
-      - PG_HOST=postgres
-      - PG_PORT=5432
-      - PG_USER=postgres
-      - PG_PASSWORD=123
-    depends_on:
-     - "postgres"
+      - REPORTS_PER_SECOND=200
+      - REPORTS_TOTAL=1000
+      - DATA_SIZE=512
     networks:
      - net
 

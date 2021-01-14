@@ -3,6 +3,7 @@ package se.edinjakupovic.client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import se.edinjakupovic.client.stuff.simulations.ReportFetchTest;
 
@@ -18,7 +19,9 @@ public class ClientApplication implements CommandLineRunner {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(ClientApplication.class, args);
+        SpringApplication app = new SpringApplication(ClientApplication.class);
+        app.setWebApplicationType(WebApplicationType.NONE);
+        app.run(args);
     }
 
 

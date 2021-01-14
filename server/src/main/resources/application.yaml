@@ -1,0 +1,4 @@
+producer:
+  rate: ${REPORTS_PER_SECOND:20}
+  total: ${REPORTS_TOTAL:1000}
+  data-size: ${DATA_SIZE:512}
